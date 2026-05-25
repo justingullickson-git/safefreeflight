@@ -1,65 +1,180 @@
-import Image from "next/image";
+'use client'
+import { useEffect, useState } from 'react'
+import { supabase } from './lib/supabase'
+import Link from 'next/link'
+
+const severityStyles = {
+  'Fatal': 'bg-red-100 text-red-800',
+  'Serious': 'bg-amber-100 text-amber-800',
+  'Minor': 'bg-green-100 text-green-800',
+  'Incident': 'bg-blue-100 text-blue-800',
+}
 
 export default function Home() {
+  const [incidents, setIncidents] = useState([])
+  const [filtered, setFiltered] = useState([])
+  const [search, setSearch] = useState('')
+  const [country, setCountry] = useState('')
+  const [severity, setSeverity] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchIncidents() {
+      const { data, error } = await supabase
+        .from('incidents')
+        .select('*')
+        .order('date', { ascending: false })
+      if (error) console.error(error)
+      else {
+        setIncidents(data)
+        setFiltered(data)
+      }
+      setLoading(false)
+    }
+    fetchIncidents()
+  }, [])
+
+  useEffect(() => {
+    let results = incidents
+    if (search) {
+      const q = search.toLowerCase()
+      results = results.filter(i =>
+        i.site?.toLowerCase().includes(q) ||
+        i.location?.toLowerCase().includes(q) ||
+        i.country?.toLowerCase().includes(q) ||
+        i.glider?.toLowerCase().includes(q) ||
+        i.weather?.toLowerCase().includes(q) ||
+        i.summary?.toLowerCase().includes(q) ||
+        i.tags?.some(t => t.toLowerCase().includes(q))
+      )
+    }
+    if (country) results = results.filter(i => i.country === country)
+    if (severity) results = results.filter(i => i.severity === severity)
+    setFiltered(results)
+  }, [search, country, severity, incidents])
+
+  const liveCount = incidents.filter(i => i.live).length
+  const seriousCount = incidents.filter(i => i.severity === 'Serious' || i.severity === 'Fatal').length
+  const pendingCount = incidents.filter(i => !i.live).length
+  const countries = [...new Set(incidents.map(i => i.country))].sort()
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-gray-50">
+      <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
+        <div className="flex items-center gap-2 font-semibold text-lg mr-6">
+          <span>🪂</span> SafeFreeFlight
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
+        <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
+        <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
+        <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
+        <Link href="/submit" className="ml-auto bg-white text-blue-800 px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-50">
+          Report an occurrence
+        </Link>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">SafeFreeFlight Safety Database</h1>
+        <p className="text-gray-500 text-sm mb-6">Canadian free flight accident & incident registry — international reports included</p>
+
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Total reports</div>
+            <div className="text-2xl font-semibold">{incidents.length}</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Live</div>
+            <div className="text-2xl font-semibold text-green-700">{liveCount}</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Serious injuries</div>
+            <div className="text-2xl font-semibold text-amber-700">{seriousCount}</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Pending consent</div>
+            <div className="text-2xl font-semibold text-amber-700">{pendingCount}</div>
+          </div>
+        </div>
+
+        <div className="flex gap-3 mb-4 flex-wrap">
+          <div className="relative flex-1 min-w-48">
+            <input
+              type="text"
+              placeholder="Search by site, country, equipment, conditions…"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-blue-400"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <select
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
+            value={country}
+            onChange={e => setCountry(e.target.value)}
           >
-            Documentation
-          </a>
+            <option value="">All countries</option>
+            {countries.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <select
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
+            value={severity}
+            onChange={e => setSeverity(e.target.value)}
+          >
+            <option value="">All severity</option>
+            <option>Fatal</option>
+            <option>Serious</option>
+            <option>Minor</option>
+            <option>Incident</option>
+          </select>
         </div>
-      </main>
-    </div>
-  );
+
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">Reports</span>
+          <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">Showing {filtered.length} of {incidents.length}</span>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading reports…</div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filtered.map(incident => (
+              <Link href={`/incident/${incident.id}`} key={incident.id}>
+                <div className={`bg-white rounded-lg border p-4 hover:border-gray-400 transition-colors cursor-pointer ${incident.live ? 'border-green-400' : 'border-gray-200'}`}>
+                  <div className="flex items-start gap-3 mb-2">
+                    <span className={`text-xs font-medium px-2 py-1 rounded mt-0.5 ${severityStyles[incident.severity] || 'bg-gray-100 text-gray-700'}`}>
+                      {incident.severity}
+                    </span>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 flex items-center gap-2 flex-wrap">
+                        {incident.site}
+                        <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                          {incident.country === 'Canada' ? '🇨🇦' : '🌎'} {incident.country}
+                        </span>
+                        {incident.live && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">✓ Live</span>}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 flex gap-3 flex-wrap">
+                        <span>📅 {incident.date}</span>
+                        <span>📍 {incident.location}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {incident.live && !incident.pilot_anonymous ? incident.pilot_name : incident.live ? 'Anonymous' : 'Pending consent'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">{incident.summary}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {incident.tags?.map(tag => (
+                        <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{tag}</span>
+                      ))}
+                    </div>
+                    <span className="text-xs text-blue-500">Full report →</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  )
 }
