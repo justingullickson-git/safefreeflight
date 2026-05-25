@@ -11,8 +11,8 @@ const severityStyles = {
 }
 
 export default function Home() {
-  const [incidents, setIncidents] = useState([])
-  const [filtered, setFiltered] = useState([])
+const [incidents, setIncidents] = useState([] as any[])
+const [filtered, setFiltered] = useState([] as any[])
   const [search, setSearch] = useState('')
   const [country, setCountry] = useState('')
   const [severity, setSeverity] = useState('')
@@ -45,7 +45,7 @@ export default function Home() {
         i.glider?.toLowerCase().includes(q) ||
         i.weather?.toLowerCase().includes(q) ||
         i.summary?.toLowerCase().includes(q) ||
-        i.tags?.some(t => t.toLowerCase().includes(q))
+        i.tags?.some((t: string) => t.toLowerCase().includes(q))
       )
     }
     if (country) results = results.filter(i => i.country === country)
@@ -140,7 +140,7 @@ export default function Home() {
               <Link href={`/incident/${incident.id}`} key={incident.id}>
                 <div className={`bg-white rounded-lg border p-4 hover:border-gray-400 transition-colors cursor-pointer ${incident.live ? 'border-green-400' : 'border-gray-200'}`}>
                   <div className="flex items-start gap-3 mb-2">
-                    <span className={`text-xs font-medium px-2 py-1 rounded mt-0.5 ${severityStyles[incident.severity] || 'bg-gray-100 text-gray-700'}`}>
+                    <span className={`text-xs font-medium px-2 py-1 rounded mt-0.5 ${severityStyles[incident.severity as keyof typeof severityStyles] || 'bg-gray-100 text-gray-700'}`}>
                       {incident.severity}
                     </span>
                     <div className="flex-1">
@@ -163,7 +163,7 @@ export default function Home() {
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">{incident.summary}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex gap-1.5 flex-wrap">
-                      {incident.tags?.map(tag => (
+                      {incident.tags?.map((tag: string) => (
                         <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{tag}</span>
                       ))}
                     </div>
