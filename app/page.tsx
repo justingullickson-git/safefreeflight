@@ -88,7 +88,7 @@ const [filtered, setFiltered] = useState([] as any[])
         <div className="grid grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-xs text-gray-500 mb-1">Total reports</div>
-            <div className="text-2xl font-semibold">{incidents.length}</div>
+            <div className="text-2xl font-semibold text-blue-800">{incidents.length}</div>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="text-xs text-gray-500 mb-1">Live</div>
