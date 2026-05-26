@@ -8,6 +8,41 @@ const AIRCRAFT_TYPES = ['Paraglider','Hang Glider','Mini Wing','Speedflyer','Par
 const TIME_OPTIONS = ['Early morning (before 9am)','Morning (9am–12pm)','Mid-day (12pm–2pm)','Afternoon (2pm–6pm)','Evening (after 6pm)','Night','Unknown']
 const INJURY_OPTIONS = ['No injury','Minor (no medical aid or on-site aid only)','Serious (secondary medical aid)','Fatality','Unknown']
 
+const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white"
+const textareaClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white resize-none"
+const selectClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white"
+const labelClass = "text-xs font-medium text-gray-500 block mb-1"
+
+function NavBar() {
+  return (
+    <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
+      <div className="flex items-center gap-2 font-semibold text-lg mr-6"><span>🪂</span> SafeFreeFlight</div>
+      <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
+      <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
+      <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
+      <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
+    </nav>
+  )
+}
+
+function Pill({ label, selected, onClick }: { label: string, selected: boolean, onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${selected ? 'bg-blue-800 text-white border-blue-800' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'}`}>
+      {label}
+    </button>
+  )
+}
+
+function Toggle({ value, onChange }: { value: boolean, onChange: () => void }) {
+  return (
+    <button type="button" onClick={onChange}
+      className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${value ? 'bg-blue-800' : 'bg-gray-300'}`}>
+      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${value ? 'left-5' : 'left-1'}`} />
+    </button>
+  )
+}
+
 export default function SubmitPage() {
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
@@ -38,115 +73,93 @@ export default function SubmitPage() {
     })
   }
 
+  const getSeverity = () => {
+    if (form.pilot_injury.includes('Fatality')) return 'Fatal'
+    if (form.pilot_injury.includes('Serious')) return 'Serious'
+    if (form.pilot_injury.includes('Minor')) return 'Minor'
+    return 'Incident'
+  }
+
   async function handleSubmit() {
-  setSubmitting(true)
-  setError('')
+    setSubmitting(true)
+    setError('')
 
-  // Generate AI summary
-  let summary = ''
-  try {
-    const res = await fetch('/api/summarize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        description: form.description,
-        prevention: form.prevention,
-        site: form.site,
-        country: form.country,
-        severity: form.pilot_injury.includes('Serious') ? 'Serious' : form.pilot_injury.includes('Fatality') ? 'Fatal' : form.pilot_injury.includes('Minor') ? 'Minor' : 'Incident',
-        pilot_injury: form.pilot_injury,
+    let summary = ''
+    try {
+      const res = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: form.description,
+          prevention: form.prevention,
+          site: form.site,
+          country: form.country,
+          severity: getSeverity(),
+          pilot_injury: form.pilot_injury,
+        })
       })
-    })
-    const data = await res.json()
-    if (data.summary) summary = data.summary
-  } catch (e) {
-    console.error('Summary generation failed:', e)
+      const data = await res.json()
+      if (data.summary) summary = data.summary
+    } catch (e) {
+      console.error('Summary generation failed:', e)
+    }
+
+    const { error: sbError } = await supabase.from('incidents').insert([{
+      reporter_name: form.reporter_name,
+      reporter_email: form.reporter_email,
+      reporter_phone: form.reporter_phone,
+      pilot_name: form.pilot_anonymous ? 'Anonymous' : form.pilot_name,
+      pilot_anonymous: form.pilot_anonymous,
+      pilot_rating: form.pilot_rating,
+      date: form.date || null,
+      time_of_day: form.time_of_day,
+      country: form.country,
+      province: form.province,
+      site: form.site,
+      location: form.location,
+      aircraft_type: form.aircraft_type,
+      manufacturer: form.manufacturer,
+      model: form.model,
+      certification: form.certification,
+      pilot_injury: form.pilot_injury,
+      passenger_injury: form.passenger_injury,
+      injury_description: form.injury_description,
+      damage: form.damage,
+      description: form.description,
+      prevention: form.prevention,
+      live: false,
+      summary,
+      tags: [],
+      severity: getSeverity(),
+    }])
+
+    setSubmitting(false)
+    if (sbError) {
+      setError(sbError.message)
+    } else {
+      setSubmitted(true)
+    }
   }
-
-  const { error: sbError } = await supabase.from('incidents').insert([{
-    reporter_name: form.reporter_name,
-    reporter_email: form.reporter_email,
-    reporter_phone: form.reporter_phone,
-    pilot_name: form.pilot_anonymous ? 'Anonymous' : form.pilot_name,
-    pilot_anonymous: form.pilot_anonymous,
-    pilot_rating: form.pilot_rating,
-    date: form.date || null,
-    time_of_day: form.time_of_day,
-    country: form.country,
-    province: form.province,
-    site: form.site,
-    location: form.location,
-    aircraft_type: form.aircraft_type,
-    manufacturer: form.manufacturer,
-    model: form.model,
-    certification: form.certification,
-    pilot_injury: form.pilot_injury,
-    passenger_injury: form.passenger_injury,
-    injury_description: form.injury_description,
-    damage: form.damage,
-    description: form.description,
-    prevention: form.prevention,
-    live: false,
-    summary: summary,
-    tags: [],
-    severity: form.pilot_injury.includes('Serious') ? 'Serious' : form.pilot_injury.includes('Fatality') ? 'Fatal' : form.pilot_injury.includes('Minor') ? 'Minor' : 'Incident',
-  }])
-
-  setSubmitting(false)
-  if (sbError) {
-    setError(sbError.message)
-  } else {
-    setSubmitted(true)
-  }
-}
-  }
-
-  const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white"
-  const textareaClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white resize-none"
-  const selectClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white"
-  const labelClass = "text-xs font-medium text-gray-500 block mb-1"
-
-  const Pill = ({ label, selected, onClick }: { label: string, selected: boolean, onClick: () => void }) => (
-    <button type="button" onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-sm border cursor-pointer transition-colors ${selected ? 'bg-blue-800 text-white border-blue-800' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'}`}>
-      {label}
-    </button>
-  )
-
-  const Toggle = ({ value, onChange }: { value: boolean, onChange: () => void }) => (
-    <button type="button" onClick={onChange}
-      className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${value ? 'bg-blue-800' : 'bg-gray-300'}`}>
-      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${value ? 'left-5' : 'left-1'}`} />
-    </button>
-  )
-
-  const Nav = () => (
-    <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
-      <div className="flex items-center gap-2 font-semibold text-lg mr-6"><span>🪂</span> SafeFreeFlight</div>
-      <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
-      <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
-      <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
-      <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
-    </nav>
-  )
-
-  if (submitted) return (
-    <main className="min-h-screen bg-gray-50">
-      <Nav />
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-5xl mb-4">✅</div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-3">Report submitted</h1>
-        <p className="text-gray-500 mb-6">Thank you for contributing to the SafeFreeFlight community. Your report has been received and will be reviewed before publication.</p>
-        <Link href="/" className="bg-blue-800 text-white px-6 py-2.5 rounded-lg text-sm hover:bg-blue-900 inline-block">Back to database</Link>
-      </div>
-    </main>
-  )
 
   const steps = ['Reporter','Pilot','Occurrence','Aircraft','Injury','Narrative','Publication']
 
+  if (submitted) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <NavBar />
+        <div className="max-w-lg mx-auto px-4 py-16 text-center">
+          <div className="text-5xl mb-4">✅</div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-3">Report submitted</h1>
+          <p className="text-gray-500 mb-6">Thank you for contributing to the SafeFreeFlight community. Your report has been received and will be reviewed before publication.</p>
+          <Link href="/" className="bg-blue-800 text-white px-6 py-2.5 rounded-lg text-sm hover:bg-blue-900 inline-block">Back to database</Link>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <Nav />
+      <NavBar />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-1">Submit an occurrence report</h1>
@@ -229,7 +242,7 @@ export default function SubmitPage() {
             <div>
               <h2 className="text-base font-medium text-gray-900 mb-1">Occurrence details</h2>
               <p className="text-sm text-gray-500 mb-4">When and where did the occurrence happen?</p>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Date</label>
                   <input type="date" className={inputClass} value={form.date} onChange={e => update('date', e.target.value)} />
@@ -355,7 +368,7 @@ export default function SubmitPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900 mb-1">Publish report to the community database</div>
-                      <div className="text-xs text-gray-500">Location, site, date, aircraft, and incident details will all be included. Only personal names and contact info are withheld. This helps the whole community learn and stay safer.</div>
+                      <div className="text-xs text-gray-500">Location, site, date, aircraft, and incident details will all be included. Only personal names and contact info are withheld.</div>
                     </div>
                     <Toggle value={form.publish} onChange={() => update('publish', !form.publish)} />
                   </div>
@@ -367,7 +380,7 @@ export default function SubmitPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900 mb-1">Include pilot name in published report</div>
-                      <div className="text-xs text-gray-500">Some pilots choose to be identified to add accountability and context. Either way the report is equally valuable.</div>
+                      <div className="text-xs text-gray-500">Some pilots choose to be identified to add accountability and context.</div>
                     </div>
                     <Toggle value={!form.pilot_anonymous} onChange={() => update('pilot_anonymous', !form.pilot_anonymous)} />
                   </div>
