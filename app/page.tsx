@@ -109,13 +109,13 @@ const [filtered, setFiltered] = useState([] as any[])
             <input
               type="text"
               placeholder="Search by site, country, equipment, conditions…"
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-blue-400"
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 placeholder-gray-400"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <select
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white text-gray-900"
             value={country}
             onChange={e => setCountry(e.target.value)}
           >
@@ -123,7 +123,7 @@ const [filtered, setFiltered] = useState([] as any[])
             {countries.map(c => <option key={c}>{c}</option>)}
           </select>
           <select
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 bg-white text-gray-900"
             value={severity}
             onChange={e => setSeverity(e.target.value)}
           >
