@@ -11,6 +11,21 @@ const severityStyles = {
   'Incident': 'bg-blue-100 text-blue-800',
 }
 
+function NavBar() {
+  return (
+    <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
+      <div className="flex items-center gap-2 font-semibold text-lg mr-6"><span>🪂</span> SafeFreeFlight</div>
+      <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
+      <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
+      <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
+      <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
+      <Link href="/submit" className="ml-auto bg-white text-blue-800 px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-50">
+        Report an occurrence
+      </Link>
+    </nav>
+  )
+}
+
 export default function IncidentPage() {
   const { id } = useParams()
   const [incident, setIncident] = useState(null)
@@ -61,42 +76,21 @@ export default function IncidentPage() {
 
   if (loading) return (
     <main className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
-        <div className="flex items-center gap-2 font-semibold text-lg mr-6">
-          <span>🪂</span> SafeFreeFlight
-        </div>
-        <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
-        <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
-        <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
-        <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
-        <Link href="/submit" className="ml-auto bg-white text-blue-800 px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-50">
-          Report an occurrence
-        </Link>
-      </nav>
-      <div className="text-center py-12 text-gray-600">Loading report…</div>
+      <NavBar />
+      <div className="text-center py-12 text-gray-400">Loading report…</div>
     </main>
   )
 
   if (!incident) return (
     <main className="min-h-screen bg-gray-50">
-      <div className="text-center py-12 text-gray-600">Report not found.</div>
+      <NavBar />
+      <div className="text-center py-12 text-gray-400">Report not found.</div>
     </main>
   )
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
-        <div className="flex items-center gap-2 font-semibold text-lg mr-6">
-          <span>🪂</span> SafeFreeFlight
-        </div>
-        <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
-        <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
-        <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
-        <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
-        <Link href="/submit" className="ml-auto bg-white text-blue-800 px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-50">
-          Report an occurrence
-        </Link>
-      </nav>
+      <NavBar />
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         <Link href="/" className="text-blue-500 text-sm flex items-center gap-1 mb-6 hover:text-blue-700">
@@ -126,38 +120,38 @@ export default function IncidentPage() {
 
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Date & time</div>
-            <div className="text-sm font-medium">{incident.date} · {incident.time_of_day}</div>
+            <div className="text-xs text-gray-500 mb-1">Date & time</div>
+            <div className="text-sm font-medium text-gray-900">{incident.date} · {incident.time_of_day}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Location</div>
-            <div className="text-sm font-medium">{incident.location}</div>
+            <div className="text-xs text-gray-500 mb-1">Location</div>
+            <div className="text-sm font-medium text-gray-900">{incident.location}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Country</div>
-            <div className="text-sm font-medium">{incident.country}</div>
+            <div className="text-xs text-gray-500 mb-1">Country</div>
+            <div className="text-sm font-medium text-gray-900">{incident.country}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Pilot</div>
-            <div className="text-sm font-medium">
-              {incident.pilot_anonymous ? <span className="text-gray-600 italic">Anonymous</span> : incident.pilot_name}
+            <div className="text-xs text-gray-500 mb-1">Pilot</div>
+            <div className="text-sm font-medium text-gray-900">
+              {incident.pilot_anonymous ? <span className="text-gray-400 italic">Anonymous</span> : incident.pilot_name}
             </div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Rating</div>
-            <div className="text-sm font-medium">{incident.pilot_rating?.join(', ') || 'Not specified'}</div>
+            <div className="text-xs text-gray-500 mb-1">Rating</div>
+            <div className="text-sm font-medium text-gray-900">{incident.pilot_rating?.join(', ') || 'Not specified'}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Glider</div>
-            <div className="text-sm font-medium">{incident.glider}</div>
+            <div className="text-xs text-gray-500 mb-1">Glider</div>
+            <div className="text-sm font-medium text-gray-900">{incident.glider}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-600 mb-1">Harness</div>
-            <div className="text-sm font-medium">{incident.harness}</div>
+            <div className="text-xs text-gray-500 mb-1">Harness</div>
+            <div className="text-sm font-medium text-gray-900">{incident.harness || 'Not specified'}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3 col-span-2">
-            <div className="text-xs text-gray-600 mb-1">Weather</div>
-            <div className="text-sm font-medium">{incident.weather}</div>
+            <div className="text-xs text-gray-500 mb-1">Weather</div>
+            <div className="text-sm font-medium text-gray-900">{incident.weather}</div>
           </div>
         </div>
 
@@ -168,12 +162,12 @@ export default function IncidentPage() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
           <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Full incident description</h2>
-          <p className="text-sm text-gray-700 leading-relaxed">{incident.description}</p>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{incident.description}</p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 mb-8">
           <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Action & prevention</h2>
-          <p className="text-sm text-gray-700 leading-relaxed">{incident.prevention}</p>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{incident.prevention}</p>
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -182,7 +176,7 @@ export default function IncidentPage() {
           </h2>
 
           {comments.length === 0 && (
-            <p className="text-sm text-gray-600 mb-6">No comments yet — be the first to add to the discussion.</p>
+            <p className="text-sm text-gray-400 mb-6">No comments yet — be the first to add to the discussion.</p>
           )}
 
           <div className="flex flex-col gap-4 mb-6">
@@ -194,11 +188,11 @@ export default function IncidentPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-900">{comment.author}</span>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-gray-400">
                       {new Date(comment.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{comment.text}</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{comment.text}</p>
                 </div>
               </div>
             ))}
@@ -210,13 +204,13 @@ export default function IncidentPage() {
               <input
                 type="text"
                 placeholder="Your name (or leave blank for Anonymous)"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 outline-none focus:border-blue-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 outline-none focus:border-blue-400 text-gray-900"
                 value={author}
                 onChange={e => setAuthor(e.target.value)}
               />
               <textarea
                 placeholder="Share your thoughts, experience, or advice…"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:border-blue-400 resize-none"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:border-blue-400 resize-none text-gray-900"
                 rows={3}
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
@@ -230,7 +224,7 @@ export default function IncidentPage() {
               </button>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 text-sm text-gray-600 text-center">
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 text-sm text-gray-400 text-center">
               Discussion will open once this report is published.
             </div>
           )}
