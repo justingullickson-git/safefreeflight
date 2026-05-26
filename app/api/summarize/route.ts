@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { description, prevention, site, country, severity, pilot_injury } = await request.json()
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 200,
       messages: [
         {
