@@ -73,13 +73,13 @@ export default function IncidentPage() {
           Report an occurrence
         </Link>
       </nav>
-      <div className="text-center py-12 text-gray-400">Loading report…</div>
+      <div className="text-center py-12 text-gray-600">Loading report…</div>
     </main>
   )
 
   if (!incident) return (
     <main className="min-h-screen bg-gray-50">
-      <div className="text-center py-12 text-gray-400">Report not found.</div>
+      <div className="text-center py-12 text-gray-600">Report not found.</div>
     </main>
   )
 
@@ -126,37 +126,37 @@ export default function IncidentPage() {
 
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Date & time</div>
+            <div className="text-xs text-gray-600 mb-1">Date & time</div>
             <div className="text-sm font-medium">{incident.date} · {incident.time_of_day}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Location</div>
+            <div className="text-xs text-gray-600 mb-1">Location</div>
             <div className="text-sm font-medium">{incident.location}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Country</div>
+            <div className="text-xs text-gray-600 mb-1">Country</div>
             <div className="text-sm font-medium">{incident.country}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Pilot</div>
+            <div className="text-xs text-gray-600 mb-1">Pilot</div>
             <div className="text-sm font-medium">
-              {incident.pilot_anonymous ? <span className="text-gray-400 italic">Anonymous</span> : incident.pilot_name}
+              {incident.pilot_anonymous ? <span className="text-gray-600 italic">Anonymous</span> : incident.pilot_name}
             </div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Rating</div>
+            <div className="text-xs text-gray-600 mb-1">Rating</div>
             <div className="text-sm font-medium">{incident.pilot_rating?.join(', ') || 'Not specified'}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Glider</div>
+            <div className="text-xs text-gray-600 mb-1">Glider</div>
             <div className="text-sm font-medium">{incident.glider}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3">
-            <div className="text-xs text-gray-400 mb-1">Harness</div>
+            <div className="text-xs text-gray-600 mb-1">Harness</div>
             <div className="text-sm font-medium">{incident.harness}</div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-3 col-span-2">
-            <div className="text-xs text-gray-400 mb-1">Weather</div>
+            <div className="text-xs text-gray-600 mb-1">Weather</div>
             <div className="text-sm font-medium">{incident.weather}</div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function IncidentPage() {
           </h2>
 
           {comments.length === 0 && (
-            <p className="text-sm text-gray-400 mb-6">No comments yet — be the first to add to the discussion.</p>
+            <p className="text-sm text-gray-600 mb-6">No comments yet — be the first to add to the discussion.</p>
           )}
 
           <div className="flex flex-col gap-4 mb-6">
@@ -194,7 +194,7 @@ export default function IncidentPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-900">{comment.author}</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-600">
                       {new Date(comment.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   </div>
@@ -230,7 +230,7 @@ export default function IncidentPage() {
               </button>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 text-sm text-gray-400 text-center">
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 text-sm text-gray-600 text-center">
               Discussion will open once this report is published.
             </div>
           )}
