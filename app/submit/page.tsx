@@ -39,42 +39,66 @@ export default function SubmitPage() {
   }
 
   async function handleSubmit() {
-    setSubmitting(true)
-    setError('')
-    const { error: sbError } = await supabase.from('incidents').insert([{
-      reporter_name: form.reporter_name,
-      reporter_email: form.reporter_email,
-      reporter_phone: form.reporter_phone,
-      pilot_name: form.pilot_anonymous ? 'Anonymous' : form.pilot_name,
-      pilot_anonymous: form.pilot_anonymous,
-      pilot_rating: form.pilot_rating,
-      date: form.date || null,
-      time_of_day: form.time_of_day,
-      country: form.country,
-      province: form.province,
-      site: form.site,
-      location: form.location,
-      aircraft_type: form.aircraft_type,
-      manufacturer: form.manufacturer,
-      model: form.model,
-      certification: form.certification,
-      pilot_injury: form.pilot_injury,
-      passenger_injury: form.passenger_injury,
-      injury_description: form.injury_description,
-      damage: form.damage,
-      description: form.description,
-      prevention: form.prevention,
-      live: false,
-      summary: '',
-      tags: [],
-      severity: form.pilot_injury.includes('Serious') ? 'Serious' : form.pilot_injury.includes('Fatality') ? 'Fatal' : form.pilot_injury.includes('Minor') ? 'Minor' : 'Incident',
-    }])
-    setSubmitting(false)
-    if (sbError) {
-      setError(sbError.message)
-    } else {
-      setSubmitted(true)
-    }
+  setSubmitting(true)
+  setError('')
+
+  // Generate AI summary
+  let summary = ''
+  try {
+    const res = await fetch('/api/summarize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: form.description,
+        prevention: form.prevention,
+        site: form.site,
+        country: form.country,
+        severity: form.pilot_injury.includes('Serious') ? 'Serious' : form.pilot_injury.includes('Fatality') ? 'Fatal' : form.pilot_injury.includes('Minor') ? 'Minor' : 'Incident',
+        pilot_injury: form.pilot_injury,
+      })
+    })
+    const data = await res.json()
+    if (data.summary) summary = data.summary
+  } catch (e) {
+    console.error('Summary generation failed:', e)
+  }
+
+  const { error: sbError } = await supabase.from('incidents').insert([{
+    reporter_name: form.reporter_name,
+    reporter_email: form.reporter_email,
+    reporter_phone: form.reporter_phone,
+    pilot_name: form.pilot_anonymous ? 'Anonymous' : form.pilot_name,
+    pilot_anonymous: form.pilot_anonymous,
+    pilot_rating: form.pilot_rating,
+    date: form.date || null,
+    time_of_day: form.time_of_day,
+    country: form.country,
+    province: form.province,
+    site: form.site,
+    location: form.location,
+    aircraft_type: form.aircraft_type,
+    manufacturer: form.manufacturer,
+    model: form.model,
+    certification: form.certification,
+    pilot_injury: form.pilot_injury,
+    passenger_injury: form.passenger_injury,
+    injury_description: form.injury_description,
+    damage: form.damage,
+    description: form.description,
+    prevention: form.prevention,
+    live: false,
+    summary: summary,
+    tags: [],
+    severity: form.pilot_injury.includes('Serious') ? 'Serious' : form.pilot_injury.includes('Fatality') ? 'Fatal' : form.pilot_injury.includes('Minor') ? 'Minor' : 'Incident',
+  }])
+
+  setSubmitting(false)
+  if (sbError) {
+    setError(sbError.message)
+  } else {
+    setSubmitted(true)
+  }
+}
   }
 
   const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-900 bg-white"
