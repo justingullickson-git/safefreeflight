@@ -17,20 +17,29 @@ const [filtered, setFiltered] = useState([] as any[])
   const [country, setCountry] = useState('')
   const [severity, setSeverity] = useState('')
   const [loading, setLoading] = useState(true)
+  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
-    async function fetchIncidents() {
-      const { data, error } = await supabase
-        .from('incidents')
-        .select('*')
-        .order('date', { ascending: false })
-      if (error) console.error(error)
-      else {
-        setIncidents(data)
-        setFiltered(data)
-      }
-      setLoading(false)
-    }
+   async function fetchIncidents() {
+  const { data, error } = await supabase
+    .from('incidents')
+    .select('*')
+    .eq('live', true)
+    .order('date', { ascending: false })
+  if (error) console.error(error)
+  else {
+    setIncidents(data)
+    setFiltered(data)
+  }
+
+  const { count } = await supabase
+    .from('incidents')
+    .select('*', { count: 'exact', head: true })
+    .eq('live', false)
+  setPendingCount(count || 0)
+
+  setLoading(false)
+}
     fetchIncidents()
   }, [])
 
@@ -55,7 +64,6 @@ const [filtered, setFiltered] = useState([] as any[])
 
   const liveCount = incidents.filter(i => i.live).length
   const seriousCount = incidents.filter(i => i.severity === 'Serious' || i.severity === 'Fatal').length
-  const pendingCount = incidents.filter(i => !i.live).length
   const countries = [...new Set(incidents.map(i => i.country))].sort()
 
   return (
