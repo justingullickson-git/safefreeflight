@@ -1,12 +1,20 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function NavBar() {
+  return (
+    <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
+      <div className="flex items-center gap-2 font-semibold text-lg mr-6"><span>🪂</span> SafeFreeFlight</div>
+      <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
+      <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
+      <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
+      <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
+      <span className="ml-auto text-xs bg-blue-900 px-3 py-1 rounded-full">⚙️ Admin</span>
+    </nav>
+  )
+}
 
 const severityStyles: Record<string, string> = {
   'Fatal': 'bg-red-100 text-red-800',
@@ -23,10 +31,13 @@ export default function AdminPage() {
   const [filter, setFilter] = useState('pending')
   const [summary, setSummary] = useState('')
   const [tags, setTags] = useState('')
+  const [authed, setAuthed] = useState(false)
+  const [password, setPassword] = useState('')
+  const [wrongPassword, setWrongPassword] = useState(false)
 
   useEffect(() => {
-    fetchIncidents()
-  }, [filter])
+    if (authed) fetchIncidents()
+  }, [filter, authed])
 
   async function fetchIncidents() {
     setLoading(true)
@@ -36,6 +47,15 @@ export default function AdminPage() {
     const { data } = await query
     setIncidents(data || [])
     setLoading(false)
+  }
+
+  function checkPassword() {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setAuthed(true)
+      setWrongPassword(false)
+    } else {
+      setWrongPassword(true)
+    }
   }
 
   function openIncident(incident: any) {
@@ -92,20 +112,36 @@ export default function AdminPage() {
     alert('Saved!')
   }
 
-  const Nav = () => (
-    <nav className="bg-blue-800 text-white px-6 py-3 flex items-center gap-6">
-      <div className="flex items-center gap-2 font-semibold text-lg mr-6"><span>🪂</span> SafeFreeFlight</div>
-      <Link href="/" className="text-blue-200 hover:text-white text-sm">Database</Link>
-      <Link href="/analytics" className="text-blue-200 hover:text-white text-sm">Analytics</Link>
-      <Link href="/discussion" className="text-blue-200 hover:text-white text-sm">Discussion</Link>
-      <Link href="/about" className="text-blue-200 hover:text-white text-sm">About</Link>
-      <span className="ml-auto text-xs bg-blue-900 px-3 py-1 rounded-full">⚙️ Admin</span>
-    </nav>
-  )
+  if (!authed) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 w-full max-w-sm">
+          <div className="text-center mb-6">
+            <div className="text-3xl mb-2">🔒</div>
+            <h1 className="text-lg font-semibold text-gray-900">Admin access</h1>
+            <p className="text-sm text-gray-500 mt-1">SafeFreeFlight safety committee only</p>
+          </div>
+          <input
+            type="password"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-400 mb-3"
+            placeholder="Enter password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && checkPassword()}
+          />
+          {wrongPassword && <p className="text-xs text-red-600 mb-3">Incorrect password.</p>}
+          <button onClick={checkPassword}
+            className="w-full bg-blue-800 text-white py-2 rounded-lg text-sm hover:bg-blue-900">
+            Enter
+          </button>
+        </div>
+      </main>
+    )
+  }
 
   if (selected) return (
     <main className="min-h-screen bg-gray-50">
-      <Nav />
+      <NavBar />
       <div className="max-w-3xl mx-auto px-4 py-8">
         <button onClick={() => setSelected(null)} className="text-blue-500 text-sm flex items-center gap-1 mb-6 hover:text-blue-700">
           ← Back to admin
@@ -213,7 +249,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <Nav />
+      <NavBar />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
